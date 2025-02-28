@@ -25,44 +25,62 @@ class CalculatorScreen extends StatefulWidget {
 }
 
 class _CalculatorScreenState extends State<CalculatorScreen> {
-  String _display = '';
+  String _display = '0';
   String _operand = '';
-  int _firstOperand = 0;
-  bool _shouldClear = false;
+  double _secondOperand = 0;
+  double _firstOperand = 0;
+  String _prevOperand = '';
 
   void _onPressed(String value) {
     setState(() {
+      // if user inputs a number or decimal value, appends to the value to be evaluated
       if ('0123456789.'.contains(value)) {
-        if (_shouldClear) {
-          _display = '';
-          _shouldClear = false;
-        }
         _display += value;
+        // if user inputs a operation, sets the current display value to first operand
+        // _operand takes the operation to be made and the display is cleared
       } else if ('+-*/'.contains(value)) {
-        _firstOperand = int.parse(_display);
+        _firstOperand = double.parse(_display);
+        _secondOperand = 0;
         _operand = value;
-        _shouldClear = true;
+        _display = '';
+        // if user inputs =, takes the current value and checks the operand
+        // if operand is empty, check to see previous operand
       } else if (value == '=') {
-        double secondOperand = double.parse(_display);
+        _secondOperand = _secondOperand == 0 ? double.parse(_display) : _secondOperand;
+        double secondOperand = _secondOperand;
+        if(_operand == ''){
+          _operand = _prevOperand;
+          _prevOperand = '';
+        }
+        // switch conditions for the operations
         switch (_operand) {
           case '+':
             _display = (_firstOperand + secondOperand).toString();
+            _firstOperand = _firstOperand + secondOperand;
             break;
           case '-':
             _display = (_firstOperand - secondOperand).toString();
+            _firstOperand = _firstOperand - secondOperand;
+
             break;
           case '*':
             _display = (_firstOperand * secondOperand).toString();
+            _firstOperand = _firstOperand * secondOperand;
+
             break;
           case '/':
             _display = secondOperand == 0 ? 'Error' : (_firstOperand / secondOperand).toString();
+            _firstOperand = _firstOperand / secondOperand;
+
             break;
         }
+        _prevOperand = _operand;
         _operand = '';
-        _shouldClear = true;
+      // if user inputs 'C', clears and resets to beginning values
       } else if (value == 'C') {
         _display = '0';
         _firstOperand = 0;
+        _prevOperand = '';
         _operand = '';
       }
     });
@@ -75,7 +93,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         child: ElevatedButton(
           onPressed: () => _onPressed(text),
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blueGrey,
+            backgroundColor: Colors.blueGrey[800],
             padding: const EdgeInsets.all(20),
           ),
           child: Text(
